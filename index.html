@@ -13,6 +13,7 @@
             --accent: #9b59b6;
         }
 
+        /* KOYU MOD RENKLERİ */
         .dark-mode {
             --bg-color: #1a1a1a;
             --cont-bg: #2d2d2d;
@@ -24,15 +25,15 @@
             font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 20px;
-            transition: 0.3s;
             margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: 0.3s ease;
         }
 
-        /* Mod Değiştirme Butonu */
+        /* MOD DEĞİŞTİRME BUTONU */
         .mode-toggle {
             position: fixed;
             top: 15px;
@@ -48,58 +49,57 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* Bilgisayarda Yan Yana, Telefondan Alt Alta Düzeni */
+        .brand-header { text-align: center; margin: 40px 0 20px 0; }
+        .brand-header h1 { font-size: 32px; color: var(--accent); margin: 0; }
+
+        /* ANA YERLEŞİM: PC'de yan yana, Telefondan alt alta */
         .main-layout {
             display: flex;
-            flex-wrap: wrap; /* Sığmazsa aşağı atar */
+            flex-wrap: wrap; 
             gap: 20px;
-            width: 95%;
+            width: 100%;
             max-width: 1000px;
             justify-content: center;
-            margin-top: 50px;
         }
 
         .container {
             background-color: var(--cont-bg);
             padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             flex: 1;
-            min-width: 320px; /* Telefon genişliği sınırı */
+            min-width: 320px;
             max-width: 480px;
-            position: relative;
             border: 1px solid var(--border);
+            box-sizing: border-box;
         }
 
-        @media (max-width: 768px) {
-            .main-layout {
-                flex-direction: column; /* Telefondan kesin alt alta */
-                align-items: center;
-            }
-            .container {
-                width: 100%;
-            }
-        }
+        #timer-display { font-size: 72px; font-weight: bold; text-align: center; color: #e74c3c; margin: 20px 0; }
 
-        /* Diğer Stil Öğeleri */
-        .brand-header { text-align: center; margin-bottom: 20px; }
-        .brand-header h1 { font-size: 32px; color: var(--accent); margin: 0; }
-        #timer-display { font-size: 64px; font-weight: bold; text-align: center; color: #e74c3c; margin: 15px 0; }
-        .btn-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
-        button { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        button { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; color: white; }
         .btn-start { background: #3498db; }
         .btn-reset { background: #95a5a6; }
         .btn-mola { background: #2ecc71; }
-        .btn-analiz { background: #e67e22; width: 100%; }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid var(--border); box-sizing: border-box; }
-        .history-section { width: 95%; max-width: 1000px; margin-top: 30px; background: var(--cont-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .btn-analiz { background: #e67e22; width: 100%; margin-top: 10px; }
+
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--cont-bg); color: var(--text-color); box-sizing: border-box; }
+
+        .history-section { width: 100%; max-width: 1000px; margin-top: 30px; background: var(--cont-bg); padding: 20px; border-radius: 15px; border: 1px solid var(--border); box-sizing: border-box; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+
+        /* TELEFON İÇİN ÖZEL AYAR (Alt alta dizer) */
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; align-items: center; }
+            .container { width: 100%; min-width: unset; }
+            #timer-display { font-size: 60px; }
+        }
     </style>
 </head>
 <body>
 
-    <button class="mode-toggle" onclick="toggleDarkMode()">🌙 Mod Değiştir</button>
+    <button class="mode-toggle" id="modeBtn" onclick="toggleDarkMode()">🌙 Koyu Mod</button>
 
     <div class="brand-header">
         <h1>📊 Pomonalyze</h1>
@@ -122,10 +122,10 @@
         <div class="container">
             <h3>📝 Günlük Odak Noktaları</h3>
             <div style="display: flex; gap: 5px;">
-                <input type="text" id="todo-input" placeholder="Yeni bir görev yaz...">
-                <button class="btn-start" onclick="addTodo()" style="height: 40px;">Ekle</button>
+                <input type="text" id="todo-input" placeholder="Yeni görev...">
+                <button class="btn-start" onclick="addTodo()" style="white-space: nowrap;">Ekle</button>
             </div>
-            <ul id="todo-list" style="list-style: none; padding: 0;"></ul>
+            <ul id="todo-list" style="list-style: none; padding: 0; margin-top: 15px;"></ul>
         </div>
     </div>
 
@@ -145,14 +145,72 @@
     </div>
 
     <script>
+        // KOYU MOD FONKSİYONU
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
-            const btn = document.querySelector('.mode-toggle');
-            btn.innerHTML = document.body.classList.contains('dark-mode') ? '☀️ Açık Mod' : '🌙 Koyu Mod';
+            const btn = document.getElementById('modeBtn');
+            if (document.body.classList.contains('dark-mode')) {
+                btn.innerHTML = "☀️ Açık Mod";
+            } else {
+                btn.innerHTML = "🌙 Koyu Mod";
+            }
         }
 
-        // Mevcut sayaç ve tablo fonksiyonlarını buraya (daha önceki çalışan kodlarından) ekleyebilirsin.
-        // Eğer o kodlar elinde yoksa söyle, onları da ekleyip tam dosya vereyim.
+        // SAYAÇ VE DİĞER FONKSİYONLAR
+        let timeLeft = 1500;
+        let timerId = null;
+
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('timer-display').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (timerId) return;
+            timerId = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateDisplay();
+                } else {
+                    clearInterval(timerId);
+                    alert("Süre doldu!");
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            clearInterval(timerId);
+            timerId = null;
+            timeLeft = 1500;
+            updateDisplay();
+        }
+
+        function startMola() {
+            clearInterval(timerId);
+            timerId = null;
+            timeLeft = 300;
+            updateDisplay();
+        }
+
+        function analyzeAndSave() {
+            const min = document.getElementById('manual-minutes').value || 0;
+            const table = document.getElementById('history-body');
+            const row = table.insertRow(0);
+            const date = new Date().toLocaleTimeString();
+            row.innerHTML = `<td>${date}</td><td>25 dk</td><td>${min} dk</td><td>✅ Bitti</td>`;
+            document.getElementById('manual-minutes').value = '';
+        }
+
+        function addTodo() {
+            const input = document.getElementById('todo-input');
+            if (input.value === "") return;
+            const li = document.createElement('li');
+            li.style = "padding: 10px; border-bottom: 1px solid var(--border);";
+            li.innerHTML = `📌 ${input.value}`;
+            document.getElementById('todo-list').appendChild(li);
+            input.value = "";
+        }
     </script>
 </body>
 </html>
