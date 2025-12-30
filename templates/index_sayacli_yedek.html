@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Web App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        .current-time {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+
+        #timer-display {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #e74c3c;
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+            button:hover {
+                background-color: #4cae4c;
+            }
+
+        .btn-start {
+            background-color: #3498db;
+        }
+
+        .btn-stop {
+            background-color: #f39c12;
+        }
+
+        .history {
+            list-style-type: none;
+            padding: 0;
+        }
+
+            .history li {
+                background-color: #eee;
+                padding: 10px;
+                border-radius: 4px;
+                margin-bottom: 5px;
+                border-left: 5px solid #5cb85c;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Pomodoro Çalışma Analizörü</h1>
+
+        <div class="current-time">
+            Önerilen Çalışma Süresi: <span id="target-minutes">{{ current_target_time }}</span> dakika
+        </div>
+
+        <div id="timer-display">00:00</div>
+
+        <div class="timer-controls">
+            <button class="btn-start" onclick="startTimer()">Başlat</button>
+            <button class="btn-stop" onclick="stopTimer()">Durdur/Sıfırla</button>
+        </div>
+
+        <p>Pomodoro seansını tamamladınız mı? Gerçek çalışma sürenizi girerek performansınızı analiz edin.</p>
+
+        <form action="{{ url_for('complete') }}" method="POST">
+            <label for="actual_duration">Gerçek çalışma Süreniz (dakika):</label>
+            <input type="number" id="actual_duration" name="actual_duration" step="any" required>
+            <button type="submit">Analiz Et ve Yeni Süre Öner</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Geçmiş Performans Kayıtları</h2>
+        <ul class="history">
+            {% for item in history %}
+            <li>
+                Hedef: {{ item.hedef_sure }} dk, Gerçekleşen: {{ item.gercek_sure }} dk, Verimlilik: {{ (item.verimlilik_skoru * 100) | round(2) }}%, Tarih: {{ item.tarih }}
+            </li>
+            {% else %}
+            <li>Henüz tamamlanmamış bir Pomodoro seansı yok.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        let timer;
+        let timeLeft;
+        const display = document.getElementById('timer-display');
+        const targetMinutes = parseFloat(document.getElementById('target-minutes').innerText);
+
+        function updateDisplay(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (timer) return; // Zaten çalışıyorsa ikinci kez başlatma
+
+            if (!timeLeft) timeLeft = targetMinutes * 60;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                updateDisplay(timeLeft);
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timer = null;
+                    alert("Süre doldu! Lütfen gerçek çalışma sürenizi girip analiz edin.");
+                    playAlarm();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timer);
+            timer = null;
+            timeLeft = targetMinutes * 60;
+            updateDisplay(timeLeft);
+        }
+
+        function playAlarm() {
+            const context = new AudioContext();
+            const oscillator = context.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, context.currentTime);
+            oscillator.connect(context.destination);
+            oscillator.start();
+            oscillator.stop(context.currentTime + 1); // 1 saniye bip sesi
+        }
+
+        // Sayfa açıldığında önerilen süreyi ekrana yaz
+        updateDisplay(targetMinutes * 60);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Pro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .current-time {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        #timer-display {
+            font-size: 64px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            color: #e74c3c;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+            button:hover {
+                opacity: 0.8;
+                transform: translateY(-2px);
+            }
+
+        .btn-start {
+            background-color: #3498db;
+        }
+
+        .btn-stop {
+            background-color: #95a5a6;
+        }
+
+        .btn-mola {
+            background-color: #2ecc71;
+        }
+
+        .btn-uzun-mola {
+            background-color: #16a085;
+        }
+
+        .btn-analiz {
+            background-color: #e67e22;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        input[type="number"] {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .history {
+            list-style-type: none;
+            padding: 0;
+        }
+
+            .history li {
+                background-color: #f9f9f9;
+                padding: 12px;
+                border-radius: 6px;
+                margin-bottom: 8px;
+                border-left: 6px solid #3498db;
+                font-size: 14px;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎯 Pomodoro Analizörü</h1>
+
+        <div class="current-time">
+            Hedef: <span id="target-minutes">{{ current_target_time }}</span> Dakika
+        </div>
+
+        <div id="timer-display">00:00</div>
+
+        <div class="timer-controls">
+            <button class="btn-start" onclick="startTimer()">▶ Başlat</button>
+            <button class="btn-stop" onclick="stopTimer()">⏹ Durdur/Sıfırla</button>
+            <button class="btn-mola" onclick="setTimer(5)">☕ Kısa Mola (5dk)</button>
+            <button class="btn-uzun-mola" onclick="setTimer(15)">🏖️ Uzun Mola (15dk)</button>
+        </div>
+
+        <hr>
+
+        <p style="text-align: center; color: #666;">Seans bitince gerçek süreni gir:</p>
+        <form action="{{ url_for('complete') }}" method="POST">
+            <input type="number" id="actual_duration" name="actual_duration" placeholder="Kaç dakika çalıştın?" step="any" required>
+            <button type="submit" class="btn-analiz">Analizi Tamamla & Yeni Süre Al</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>📊 Geçmiş Kayıtlar</h2>
+        <ul class="history">
+            {% for item in history %}
+            <li>
+                <b>{{ item.tarih }}</b>: {{ item.hedef_sure }}dk Hedef -> {{ item.gercek_sure }}dk Gerçek (%{{ (item.verimlilik_skoru * 100) | round(1) }})
+            </li>
+            {% else %}
+            <li>Henüz kayıt yok. İlk seansına başla!</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        let timer;
+        let timeLeft;
+        const display = document.getElementById('timer-display');
+        const targetMinutesDisp = document.getElementById('target-minutes');
+
+        function updateDisplay(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            document.title = `${display.innerText} - Pomodoro`; // Sekme başlığında süreyi gösterir
+        }
+
+        function setTimer(mins) {
+            stopTimer();
+            timeLeft = mins * 60;
+            updateDisplay(timeLeft);
+        }
+
+        function startTimer() {
+            if (timer) return;
+            if (!timeLeft) timeLeft = parseFloat(targetMinutesDisp.innerText) * 60;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                updateDisplay(timeLeft);
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timer = null;
+                    playAlarm();
+                    alert("Süre doldu! Mola zamanı veya analiz zamanı.");
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timer);
+            timer = null;
+            let currentTarget = parseFloat(targetMinutesDisp.innerText);
+            timeLeft = currentTarget * 60;
+            updateDisplay(timeLeft);
+        }
+
+        function playAlarm() {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [440, 523, 659]; // Melodik bir ses için 3 farklı nota
+            notes.forEach((freq, i) => {
+                const osc = context.createOscillator();
+                const gain = context.createGain();
+                osc.type = 'triangle';
+                osc.frequency.value = freq;
+                osc.connect(gain);
+                gain.connect(context.destination);
+                osc.start(context.currentTime + i * 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + i * 0.2 + 0.8);
+                osc.stop(context.currentTime + i * 0.2 + 0.8);
+            });
+        }
+
+        updateDisplay(parseFloat(targetMinutesDisp.innerText) * 60);
+    </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Web App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        .current-time {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;-
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+            button:hover {
+                background-color: #4cae4c;
+            }
+
+        .history {
+            list-style-type: none;
+            padding: 0;
+        }
+
+            .history li {
+                background-color: #eee;
+                padding: 10px;
+                border-radius: 4px;
+                margin-bottom: 5px;
+                border-left: 5px solid #5cb85c;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Pomodoro Çalışma Analizörü</h1>
+
+        <div class="current-time">
+            Önerilen Çalışma Süresi: **{{ current_target_time }} dakika**
+        </div>
+
+        <p>Pomodoro seansını tamamladınız mı? Gerçek çalışma sürenizi girerek performansınızı analiz edin.</p>
+
+        <form action="{{ url_for('complete') }}" method="POST">
+            <label for="actual_duration">Gerçek çalışma Süreniz (dakika):</label>
+            <input type="number" id="actual_duration" name="actual_duration" step="any" required>
+            <button type="submit">Analiz Et ve Yeni Süre Öner</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Geçmiş Performans Kayıtları </h2>
+        <ul class="history">
+            {% for item in history %}
+            <li>
+                Hedef: {{ item.hedef_sure }} dk, Gerçekleşen: {{ item.gercek_sure }} dk, Verimlilik: %{{ (item.verimlilik_skoru * 100) | round(2) }}, Tarih: {{ item.tarih }}
+            </li>
+            {% else %}
+            <li>Henüz tamamlanmamış bir Pomodoro seansı yok.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+</body>
+</html>

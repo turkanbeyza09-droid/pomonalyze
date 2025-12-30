@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Master</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; background-color: #f0f2f5; padding: 20px; }
+        .main-layout { display: flex; gap: 20px; width: 95%; max-width: 1000px; flex-wrap: wrap; justify-content: center; }
+        .container { background-color: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); flex: 1; min-width: 320px; margin-bottom: 20px; }
+        h1, h2 { color: #2c3e50; text-align: center; margin-top: 0; }
+        
+        /* Sayaç Tasarımı */
+        #timer-display { font-size: 64px; font-weight: bold; text-align: center; margin: 15px 0; color: #e74c3c; }
+        .timer-controls { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        button { color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { opacity: 0.8; transform: translateY(-1px); }
+        .btn-start { background-color: #3498db; }
+        .btn-stop { background-color: #95a5a6; }
+        .btn-mola { background-color: #2ecc71; }
+        
+        /* To-Do List Tasarımı */
+        .todo-input-group { display: flex; gap: 5px; margin-bottom: 15px; }
+        #todo-input { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 6px; }
+        .btn-add { background-color: #9b59b6; }
+        .todo-list { list-style: none; padding: 0; }
+        .todo-item { display: flex; align-items: center; gap: 10px; background: #f9f9f9; padding: 10px; margin-bottom: 5px; border-radius: 6px; border-left: 4px solid #9b59b6; }
+        .todo-item.completed span { text-decoration: line-through; color: #888; }
+        
+        /* Form ve Analiz */
+        input[type="number"] { padding: 12px; border: 2px solid #ddd; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .btn-analiz { background-color: #e67e22; width: 100%; }
+        .history li { font-size: 13px; color: #555; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-layout">
+        <div class="container">
+            <h1>🎯 Pomodoro Analizörü</h1>
+            <div style="text-align:center; color:#27ae60; font-weight:bold;">Hedef: <span id="target-minutes">{{ current_target_time }}</span> Dakika</div>
+            <div id="timer-display">00:00</div>
+            <div class="timer-controls">
+                <button class="btn-start" onclick="startTimer()">Başlat</button>
+                <button class="btn-stop" onclick="stopTimer()">Sıfırla</button>
+                <button class="btn-mola" onclick="setTimer(5)">Mola (5dk)</button>
+            </div>
+            <form action="{{ url_for('complete') }}" method="POST">
+                <input type="number" id="actual_duration" name="actual_duration" placeholder="Kaç dk çalıştın?" step="any" required>
+                <button type="submit" class="btn-analiz">Analiz Et</button>
+            </form>
+            <h2 style="font-size: 18px; margin-top:20px;">📊 Geçmiş</h2>
+            <ul class="history" style="list-style:none; padding:0; max-height: 150px; overflow-y: auto;">
+                {% for item in history %}
+                <li>{{ item.tarih.split(' ')[1] }} | {{ item.gercek_sure }}dk (%{{ (item.verimlilik_skoru * 100) | round(0) }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="container">
+            <h2>📝 Günlük Görevler</h2>
+            <div class="todo-input-group">
+                <input type="text" id="todo-input" placeholder="Yeni görev ekle...">
+                <button class="btn-add" onclick="addTodo()">Ekle</button>
+            </div>
+            <ul id="todo-list" class="todo-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        let timer; let timeLeft;
+        const display = document.getElementById('timer-display');
+        const targetMinutesDisp = document.getElementById('target-minutes');
+
+        function updateDisplay(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function setTimer(mins) { stopTimer(); timeLeft = mins * 60; updateDisplay(timeLeft); }
+
+        function startTimer() {
+            if (timer) return;
+            if (!timeLeft) timeLeft = parseFloat(targetMinutesDisp.innerText) * 60;
+            timer = setInterval(() => {
+                timeLeft--; updateDisplay(timeLeft);
+                if (timeLeft <= 0) { clearInterval(timer); timer = null; playAlarm(); alert("Süre doldu!"); }
+            }, 1000);
+        }
+
+        function stopTimer() { clearInterval(timer); timer = null; timeLeft = parseFloat(targetMinutesDisp.innerText) * 60; updateDisplay(timeLeft); }
+
+        function playAlarm() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            [440, 523, 659].forEach((f, i) => {
+                const o = ctx.createOscillator(); const g = ctx.createGain();
+                o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+                o.start(ctx.currentTime + i * 0.15); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.15 + 0.6);
+                o.stop(ctx.currentTime + i * 0.15 + 0.6);
+            });
+        }
+
+        function addTodo() {
+            const input = document.getElementById('todo-input');
+            if (input.value.trim() === "") return;
+            const li = document.createElement('li');
+            li.className = 'todo-item';
+            li.innerHTML = `<input type="checkbox" onclick="this.parentElement.classList.toggle('completed')"> <span>${input.value}</span>`;
+            document.getElementById('todo-list').appendChild(li);
+            input.value = "";
+        }
+        updateDisplay(parseFloat(targetMinutesDisp.innerText) * 60);
+    </script>
+</body>
+</html>
