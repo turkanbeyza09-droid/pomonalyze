@@ -13,7 +13,7 @@
             --accent: #9b59b6;
         }
 
-        /* KOYU MOD RENKLERİ */
+        /* KOYU MOD AYARLARI */
         .dark-mode {
             --bg-color: #1a1a1a;
             --cont-bg: #2d2d2d;
@@ -38,61 +38,61 @@
             position: fixed;
             top: 15px;
             right: 15px;
-            padding: 10px 15px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
             border: 1px solid var(--border);
-            background: var(--cont-bg);
-            color: var(--text-color);
+            background: var(--accent);
+            color: white;
             cursor: pointer;
             z-index: 1000;
             font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        .brand-header { text-align: center; margin: 40px 0 20px 0; }
-        .brand-header h1 { font-size: 32px; color: var(--accent); margin: 0; }
+        .brand-header { text-align: center; margin: 50px 0 30px 0; }
+        .brand-header h1 { font-size: 36px; color: var(--accent); margin: 0; }
 
         /* ANA YERLEŞİM: PC'de yan yana, Telefondan alt alta */
         .main-layout {
             display: flex;
             flex-wrap: wrap; 
-            gap: 20px;
+            gap: 25px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
             justify-content: center;
         }
 
         .container {
             background-color: var(--cont-bg);
-            padding: 25px;
+            padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             flex: 1;
             min-width: 320px;
-            max-width: 480px;
+            max-width: 500px;
             border: 1px solid var(--border);
             box-sizing: border-box;
         }
 
-        #timer-display { font-size: 72px; font-weight: bold; text-align: center; color: #e74c3c; margin: 20px 0; }
+        #timer-display { font-size: 80px; font-weight: bold; text-align: center; color: #e74c3c; margin: 25px 0; }
 
-        .btn-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        button { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; color: white; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 25px; }
+        button { padding: 12px 22px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; color: white; }
         .btn-start { background: #3498db; }
         .btn-reset { background: #95a5a6; }
         .btn-mola { background: #2ecc71; }
-        .btn-analiz { background: #e67e22; width: 100%; margin-top: 10px; }
+        .btn-analiz { background: #e67e22; width: 100%; margin-top: 15px; font-size: 16px; }
 
-        input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--cont-bg); color: var(--text-color); box-sizing: border-box; }
+        input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border); background: var(--cont-bg); color: var(--text-color); box-sizing: border-box; }
 
-        .history-section { width: 100%; max-width: 1000px; margin-top: 30px; background: var(--cont-bg); padding: 20px; border-radius: 15px; border: 1px solid var(--border); box-sizing: border-box; overflow-x: auto; }
+        .history-section { width: 100%; max-width: 1100px; margin-top: 40px; background: var(--cont-bg); padding: 25px; border-radius: 15px; border: 1px solid var(--border); box-sizing: border-box; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
 
-        /* TELEFON İÇİN ÖZEL AYAR (Alt alta dizer) */
+        /* MOBIL UYUMLULUK KODU */
         @media (max-width: 768px) {
             .main-layout { flex-direction: column; align-items: center; }
-            .container { width: 100%; min-width: unset; }
+            .container { width: 100%; max-width: 400px; }
             #timer-display { font-size: 60px; }
         }
     </style>
@@ -121,11 +121,11 @@
 
         <div class="container">
             <h3>📝 Günlük Odak Noktaları</h3>
-            <div style="display: flex; gap: 5px;">
+            <div style="display: flex; gap: 8px;">
                 <input type="text" id="todo-input" placeholder="Yeni görev...">
                 <button class="btn-start" onclick="addTodo()" style="white-space: nowrap;">Ekle</button>
             </div>
-            <ul id="todo-list" style="list-style: none; padding: 0; margin-top: 15px;"></ul>
+            <ul id="todo-list" style="list-style: none; padding: 0; margin-top: 20px;"></ul>
         </div>
     </div>
 
@@ -156,7 +156,7 @@
             }
         }
 
-        // SAYAÇ VE DİĞER FONKSİYONLAR
+        // SAYAÇ AYARLARI
         let timeLeft = 1500;
         let timerId = null;
 
@@ -206,7 +206,7 @@
             const input = document.getElementById('todo-input');
             if (input.value === "") return;
             const li = document.createElement('li');
-            li.style = "padding: 10px; border-bottom: 1px solid var(--border);";
+            li.style = "padding: 12px; border-bottom: 1px solid var(--border);";
             li.innerHTML = `📌 ${input.value}`;
             document.getElementById('todo-list').appendChild(li);
             input.value = "";
